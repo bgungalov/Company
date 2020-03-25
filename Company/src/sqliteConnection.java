@@ -9,7 +9,7 @@ public class sqliteConnection {
 		try 
 		{
 			Class.forName("org.sqlite.JDBC");
-			Connection conn = DriverManager.getConnection("jdbc:sqlite:EmployeeInfo.db");
+			Connection conn = DriverManager.getConnection("jdbc:sqlite:EmployeeData.db");
 			JOptionPane.showMessageDialog(null, "Connection Successful");
 			return conn;
 			
