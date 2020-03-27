@@ -83,6 +83,9 @@ public class Login {
 					if (count == 1) 
 					{
 						JOptionPane.showMessageDialog(null, "Login Successful");
+						frame.dispose();
+						EmployeeInfo emplInfo = new EmployeeInfo();
+						emplInfo.setVisible(true);
 					}
 					else if(count > 1)
 					{
