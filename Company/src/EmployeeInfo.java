@@ -17,11 +17,17 @@ import javax.swing.JTable;
 import javax.swing.JScrollPane;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class EmployeeInfo extends JFrame {
 
 	private JPanel contentPane;
 	private JTable table;
+	private JComboBox comboBoxName;
+	private JComboBox comboBoxSelect;
 
 	/**
 	 * Launch the application.
@@ -44,6 +50,38 @@ public class EmployeeInfo extends JFrame {
 	private JTextField textFieldName;
 	private JTextField textFieldSurname;
 	private JTextField textFieldAge;
+	private JTextField textFieldSearch;
+	
+	// --> Refresh table after manipulating it
+	public void refreshTable() {
+		try {
+			String query = "select EID, Name, Surname, Age from EmployeeInfo";
+			PreparedStatement pst = connection.prepareStatement(query);
+			ResultSet rs = pst.executeQuery();
+			table.setModel(DbUtils.resultSetToTableModel(rs));
+			pst.close();
+			rs.close();
+			
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	public void fillComboBox() {
+		try {
+			String query = "select * from EmployeeInfo";
+			PreparedStatement pst = connection.prepareStatement(query);
+			ResultSet rs = pst.executeQuery();
+			
+			while(rs.next()) 
+			{
+				comboBoxName.addItem(rs.getString("Name"));
+			}
+			
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	}
 
 	/**
 	 * Create the frame.
@@ -66,39 +104,69 @@ public class EmployeeInfo extends JFrame {
 					ResultSet rs = pst.executeQuery();
 					table.setModel(DbUtils.resultSetToTableModel(rs));
 					
+					pst.execute();
+					pst.close();
+					
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
 			}
 		});
-		btnLoadTable.setBounds(10, 11, 168, 30);
+		btnLoadTable.setBounds(188, 320, 168, 30);
 		contentPane.add(btnLoadTable);
 		
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(188, 11, 386, 339);
+		scrollPane.setBounds(188, 42, 386, 265);
 		contentPane.add(scrollPane);
 		
 		table = new JTable();
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				try	{
+					int row = table.getSelectedRow();
+					String EID_ = (table.getModel().getValueAt(row, 0)).toString();
+					
+					String query = "select * from EmployeeInfo where EID='"+EID_+"'";
+					PreparedStatement pst = connection.prepareStatement(query);
+				
+					ResultSet rs = pst.executeQuery();
+					
+					while(rs.next()) 
+					{
+						textFieldEID.setText(rs.getString("EID"));
+						textFieldName.setText(rs.getString("Name"));
+						textFieldSurname.setText(rs.getString("Surname"));
+						textFieldAge.setText(rs.getString("Age"));
+					}
+					
+					pst.close();
+										
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
 		scrollPane.setViewportView(table);
 		
 		JLabel lblEID = new JLabel("EID");
 		lblEID.setHorizontalAlignment(SwingConstants.LEFT);
-		lblEID.setBounds(10, 55, 42, 14);
+		lblEID.setBounds(10, 150, 42, 14);
 		contentPane.add(lblEID);
 		
 		JLabel lblName = new JLabel("Name");
 		lblName.setHorizontalAlignment(SwingConstants.LEFT);
-		lblName.setBounds(10, 80, 42, 14);
+		lblName.setBounds(10, 175, 42, 14);
 		contentPane.add(lblName);
 		
 		JLabel lblSurname = new JLabel("Surname");
 		lblSurname.setHorizontalAlignment(SwingConstants.LEFT);
-		lblSurname.setBounds(10, 105, 52, 14);
+		lblSurname.setBounds(10, 200, 52, 14);
 		contentPane.add(lblSurname);
 		
 		JLabel lblAge = new JLabel("Age");
 		lblAge.setHorizontalAlignment(SwingConstants.LEFT);
-		lblAge.setBounds(10, 130, 42, 14);
+		lblAge.setBounds(10, 225, 42, 14);
 		contentPane.add(lblAge);
 		
 		JButton btnSave = new JButton("Save");
@@ -121,28 +189,30 @@ public class EmployeeInfo extends JFrame {
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
+				
+				refreshTable();
 			}
 		});
-		btnSave.setBounds(10, 155, 80, 23);
+		btnSave.setBounds(10, 250, 80, 23);
 		contentPane.add(btnSave);
 		
 		textFieldEID = new JTextField();
-		textFieldEID.setBounds(66, 52, 112, 20);
+		textFieldEID.setBounds(66, 147, 112, 20);
 		contentPane.add(textFieldEID);
 		textFieldEID.setColumns(10);
 		
 		textFieldName = new JTextField();
-		textFieldName.setBounds(66, 77, 112, 20);
+		textFieldName.setBounds(66, 172, 112, 20);
 		contentPane.add(textFieldName);
 		textFieldName.setColumns(10);
 		
 		textFieldSurname = new JTextField();
-		textFieldSurname.setBounds(66, 102, 112, 20);
+		textFieldSurname.setBounds(66, 197, 112, 20);
 		contentPane.add(textFieldSurname);
 		textFieldSurname.setColumns(10);
 		
 		textFieldAge = new JTextField();
-		textFieldAge.setBounds(66, 127, 112, 20);
+		textFieldAge.setBounds(66, 222, 112, 20);
 		contentPane.add(textFieldAge);
 		textFieldAge.setColumns(10);
 		
@@ -168,9 +238,104 @@ public class EmployeeInfo extends JFrame {
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
+				
+				refreshTable();
 			}
 		});
-		btnUpdate.setBounds(98, 155, 80, 23);
+		btnUpdate.setBounds(98, 250, 80, 23);
 		contentPane.add(btnUpdate);
+		
+		JButton btnDelete = new JButton("Delete");
+		btnDelete.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int action = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this?",
+						"Delete",JOptionPane.YES_NO_OPTION);
+				if (action == 0) {
+				
+				try {
+					String query = "delete from EmployeeInfo where EID = '"+ textFieldEID.getText()+"' ";
+					PreparedStatement pst = connection.prepareStatement(query);
+					
+					pst.execute();
+					
+					JOptionPane.showMessageDialog(null, "Data Deleted!");
+					
+					pst.close();
+					
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+				
+				refreshTable();
+				}
+			}
+		});
+		btnDelete.setBounds(98, 284, 80, 23);
+		contentPane.add(btnDelete);
+		
+		comboBoxName = new JComboBox();
+		comboBoxName.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				try	{
+					String query = "select * from EmployeeInfo where name=?";
+					PreparedStatement pst = connection.prepareStatement(query);
+					pst.setString(1, (String) comboBoxName.getSelectedItem());
+					ResultSet rs = pst.executeQuery();
+					
+					while(rs.next()) 
+					{
+						textFieldEID.setText(rs.getString("EID"));
+						textFieldName.setText(rs.getString("Name"));
+						textFieldSurname.setText(rs.getString("Surname"));
+						textFieldAge.setText(rs.getString("Age"));
+						
+					}
+					
+					pst.close();
+										
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
+		comboBoxName.setToolTipText("View Data");
+		comboBoxName.setBounds(10, 42, 168, 22);
+		contentPane.add(comboBoxName);
+		
+		textFieldSearch = new JTextField();
+		textFieldSearch.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				try	{
+					String selection = (String)comboBoxSelect.getSelectedItem();
+					String query = "select EID, Name, Surname, Age from EmployeeInfo where "+selection+"=?";
+					PreparedStatement pst = connection.prepareStatement(query);
+					pst.setString(1, textFieldSearch.getText());
+					ResultSet rs = pst.executeQuery();
+					
+					table.setModel(DbUtils.resultSetToTableModel(rs));
+					/*while(rs.next()) 
+					{
+						
+					}*/
+					
+					pst.close();
+										
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
+		textFieldSearch.setBounds(444, 11, 130, 20);
+		contentPane.add(textFieldSearch);
+		textFieldSearch.setColumns(10);
+		
+		comboBoxSelect = new JComboBox();
+		comboBoxSelect.setModel(new DefaultComboBoxModel(new String[] {"EID", "Name", "Surname", "Age"}));
+		comboBoxSelect.setBounds(225, 10, 168, 22);
+		contentPane.add(comboBoxSelect);
+		
+		refreshTable();
+		fillComboBox();
 	}
 }
