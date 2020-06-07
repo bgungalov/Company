@@ -6,8 +6,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.Color;
 
-public class Login {
-
+public class Login extends ExportDatabase {
+	
 	private JFrame frame;
 
 	/**
@@ -115,7 +115,7 @@ public class Login {
 		JLabel iconLabel = new JLabel("");
 		Image img = new ImageIcon(this.getClass().getResource("login.png")).getImage();
 		iconLabel.setIcon(new ImageIcon(img));
-		iconLabel.setBounds(33, 83, 160, 180);
+		iconLabel.setBounds(23, 83, 180, 180);
 		frame.getContentPane().add(iconLabel);
 	}
 }
